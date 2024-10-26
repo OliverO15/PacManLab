@@ -539,41 +539,37 @@ def food_heuristic(state, problem):
         
     # return 0 if dist_all_foods == [] else max(dist_all_foods)
     
-    ## choose each food as first food
-    min_val = 0
-    first = True
-    for food in food_grid.as_list():
-        sum = util.manhattan_distance(food, position)
-        prev_coord = food
-        coord_list = food_grid.as_list()
-        coord_list.remove(food)
-        while not coord_list == []:
-            ranked = rank_nodes(coord_list, prev_coord)
-            sum += util.manhattan_distance(prev_coord, ranked[0])
-            if not first and sum > min_val:
-                break
-            prev_coord = ranked[0]
-            coord_list = ranked[1:]
-        else:
-            # will be called if the previous loop did not end with a `break` 
+    if problem.heuristic_info.get("prevFoodGrid", []) == food_grid.as_list():
+        # only update with starting position, get other values from prev run
+        min_val = 0
+        first = True
+        for food in food_grid.as_list():
+            sum = util.manhattan_distance(food, position) + problem.heuristic_info[str(food)]
             if first:
                 min_val = sum
-                first = False
             else:
                 min_val = min(min_val, sum)
-            
-    return min_val
-
-
-def permutate_list(lst, r):
-    from itertools import permutations
-    return list(permutations(lst, r))
-
-def rank_nodes(coord_list, position):
-    return sorted(coord_list, key=lambda coord: util.manhattan_distance(coord, position))
-     
-def rank_nodes_2(coord_list, position, orig):
-    return sorted(coord_list, key=lambda coord: min(util.manhattan_distance(coord, position), util.manhattan_distance(coord, orig)))
+                first = False
+        return min_val
+    else:
+        problem.heuristic_info["prevFoodGrid"] = food_grid.as_list()
+    
+        ## choose each food as first food
+        min_val = float('inf')
+        for food in food_grid.as_list():
+            sum = 0
+            prev_coord = food
+            coord_list = food_grid.as_list()
+            coord_list.remove(food)
+            while coord_list:
+                nearest_food = min(coord_list, key=lambda coord: util.manhattan_distance(prev_coord, coord))
+                sum += util.manhattan_distance(prev_coord, nearest_food)
+                prev_coord = nearest_food
+                coord_list.remove(nearest_food)
+            problem.heuristic_info[str(food)] = sum
+            min_val = min(min_val, sum + util.manhattan_distance(food, position))
+                
+        return min_val if min_val < float('inf') else 0
 
 
 def simplified_corners_heuristic(state, problem):
