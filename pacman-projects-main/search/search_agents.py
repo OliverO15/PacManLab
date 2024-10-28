@@ -531,8 +531,46 @@ def food_heuristic(state, problem):
     problem.heuristic_info['wallCount']
     """
     position, food_grid = state
-    "*** YOUR CODE HERE ***"
-    return 0
+    "*** YOUR CODE HERE ***"    
+    return calc_food_heuristic(position, food_grid, problem)
+    
+def calc_food_heuristic(position, food_grid, problem):
+    if problem.heuristic_info.get("prevFoodGrid", None) == food_grid.as_list():
+        # food grid is the same as last run => only update with starting position, get other values from prev run
+        return min(
+            map(lambda food: util.manhattan_distance(food, position) + problem.heuristic_info[str(food)], 
+                food_grid.as_list())
+            )
+    else:
+        # last node chosen ate a food => calc all paths new
+        problem.heuristic_info["prevFoodGrid"] = food_grid.as_list()
+
+        ## choose each food as first food and get the minimum path length (including length current position->fist food)
+        min_val = float('inf')
+        for food in food_grid.as_list():
+            food_list = food_grid.as_list()
+            food_list.remove(food)
+            path_length = calc_food_path(food, food_list)
+            problem.heuristic_info[str(food)] = path_length
+            min_val = min(min_val, path_length + util.manhattan_distance(food, position))
+                
+        return min_val if min_val < float('inf') else 0
+
+def calc_food_path(start, food_list):
+    """calculate the sum of the manhattan distances between all foods, the next food chosen is always teh one with minimum manhattan distance
+
+    Args:
+        start (_type_): start point of the path
+        food_list (_type_): list of foods to be eaten
+    """
+    prev_coord = start
+    sum = 0
+    while food_list:
+        nearest_food = min(food_list, key=lambda coord: util.manhattan_distance(prev_coord, coord))
+        sum += util.manhattan_distance(prev_coord, nearest_food)
+        prev_coord = nearest_food
+        food_list.remove(nearest_food)
+    return sum
 
 
 def simplified_corners_heuristic(state, problem):
