@@ -545,24 +545,23 @@ def calc_food_heuristic(position, food_grid, problem):
         # last node chosen ate a food => calc all paths new
         problem.heuristic_info["prevFoodGrid"] = food_grid.as_list()
 
-        ## choose each food as first food
+        ## choose each food as first food and get the minimum path length (including length current position->fist food)
         min_val = float('inf')
         for food in food_grid.as_list():
             food_list = food_grid.as_list()
             food_list.remove(food)
-            path_length = calc_food_path(food, food_list, min_val)
+            path_length = calc_food_path(food, food_list)
             problem.heuristic_info[str(food)] = path_length
             min_val = min(min_val, path_length + util.manhattan_distance(food, position))
                 
         return min_val if min_val < float('inf') else 0
 
-def calc_food_path(start, food_list, min_val):
-    """calculate the sum of the manhattan distances between all foods, if a path is chosen by always going to the nearest food
+def calc_food_path(start, food_list):
+    """calculate the sum of the manhattan distances between all foods, the next food chosen is always teh one with minimum manhattan distance
 
     Args:
         start (_type_): start point of the path
         food_list (_type_): list of foods to be eaten
-        min_val (_type_): min value of other possible start points (used to prevent unnecessary calculation)
     """
     prev_coord = start
     sum = 0
