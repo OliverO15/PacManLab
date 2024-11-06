@@ -74,7 +74,60 @@ class ReflexAgent(Agent):
         new_scared_times = [ghostState.scared_timer for ghostState in new_ghost_states]
         
         "*** YOUR CODE HERE ***"
-        return successor_game_state.get_score()
+        # print(current_game_state)
+        # print(successor_game_state)
+        # print(new_pos)
+        # print(get_food_positions(new_food))
+        # print(successor_game_state.get_ghost_positions())
+        # print(new_scared_times)
+        
+        if(min(new_scared_times) > 0):
+            ghost_factor = 0
+        else:
+            ghost_factor = 5
+        food_factor = -1
+               
+        if(action=="Stop"):
+            return float('-inf')
+        
+        # give penalty for small distance to ghosts
+        min_dist_ghosts = min([util.manhattan_distance(new_ghost_pos, new_pos) for new_ghost_pos in successor_game_state.get_ghost_positions()])
+        
+        # give bonus if nearer to food or food eaten
+        if(len(get_food_positions(current_game_state.get_food())) > len(get_food_positions(successor_game_state.get_food()))):
+            # food eaten 
+            food_score = -1
+        else:
+            food_score = min([util.manhattan_distance(food_pos, new_pos) for food_pos in filter_foods(get_food_positions(new_food), current_game_state)], default=0)
+        
+        return   food_score * food_factor - 1/(min_dist_ghosts + 0.000001) * ghost_factor
+
+def filter_foods(food_list, game_state):
+    ## filter out foods with direct path involving an illegal move as first move
+    pos = game_state.get_pacman_position()
+    ret = []
+    for food in food_list:
+        first_moves = set()
+        if food[0] > pos[0]:
+            first_moves.add('East')
+        elif food[0] < pos[0]:
+            first_moves.add('West')
+        if food[1] > pos[1]:
+            first_moves.add('North')
+        elif food[1] < pos[1]:
+            first_moves.add('South')
+        if first_moves <= set(game_state.get_legal_actions()):
+            ret.append(food)
+            
+    return ret
+
+def get_food_positions(food_grid):
+    food_positions = []
+    for x in range(food_grid.width):
+        for y in range(food_grid.height):
+            if food_grid[x][y]:
+                food_positions.append((x, y))
+    return food_positions
 
 def score_evaluation_function(current_game_state):
     """
