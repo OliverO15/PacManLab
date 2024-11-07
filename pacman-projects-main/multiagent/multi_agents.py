@@ -95,7 +95,7 @@ class ReflexAgent(Agent):
         
         # give bonus if nearer to food or food eaten
         if(len(get_food_positions(current_game_state.get_food())) > len(get_food_positions(successor_game_state.get_food()))):
-            # food eaten 
+            # bonus fo food eaten
             food_score = -1
         else:
             food_score = min([util.manhattan_distance(food_pos, new_pos) for food_pos in filter_foods(get_food_positions(new_food), current_game_state)], default=0)
@@ -103,7 +103,7 @@ class ReflexAgent(Agent):
         return   food_score * food_factor - 1/(min_dist_ghosts + 0.000001) * ghost_factor
 
 def filter_foods(food_list, game_state):
-    ## filter out foods with direct path involving an illegal move as first move
+    """filter out foods with direct path involving an illegal move as first move"""
     pos = game_state.get_pacman_position()
     ret = []
     for food in food_list:
@@ -122,6 +122,7 @@ def filter_foods(food_list, game_state):
     return ret
 
 def get_food_positions(food_grid):
+    """get positions of all foods as coordinates"""
     food_positions = []
     for x in range(food_grid.width):
         for y in range(food_grid.height):
