@@ -190,8 +190,29 @@ class MinimaxAgent(MultiAgentSearchAgent):
         Returns whether or not the game state is a losing state
         """
         "*** YOUR CODE HERE ***"
-        util.raise_not_defined()
-    
+        legal_actions = game_state.get_legal_actions(0)
+        max_action = max(legal_actions, key=lambda action: self.minimax(game_state.generate_successor(0, action), 0, 1))
+        return max_action
+
+    def minimax(self, game_state, current_depth, agent_index):
+        next_depth = current_depth
+        next_agent = agent_index
+        if agent_index == game_state.get_num_agents() -1:
+            # last eval for this depth => next depth in next call
+            next_agent = 0
+            next_depth += 1
+        else:
+            next_agent += 1
+        if current_depth == self.depth or game_state.is_win() or game_state.is_lose():
+            return self.evaluation_function(game_state)
+        action_evals = [self.minimax(game_state.generate_successor(agent_index, action), next_depth, next_agent) for action in game_state.get_legal_actions(agent_index)]
+        if agent_index == 0:
+            # pacman moves (MAX)
+            return max(action_evals)
+        else:
+            # one of the ghosts moves (MIN)
+            return min(action_evals)
+
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
     """
