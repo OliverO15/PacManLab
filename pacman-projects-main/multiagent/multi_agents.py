@@ -197,7 +197,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
     def minimax(self, game_state, current_depth, agent_index):
         next_depth = current_depth
         next_agent = agent_index
-        if agent_index == game_state.get_num_agents() -1:
+        if agent_index == game_state.get_num_agents() - 1:
             # last eval for this depth => next depth in next call
             next_agent = 0
             next_depth += 1
@@ -224,7 +224,49 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         Returns the minimax action using self.depth and self.evaluation_function
         """
         "*** YOUR CODE HERE ***"
-        util.raise_not_defined()
+        legal_actions = game_state.get_legal_actions(0)
+        action_taken = None
+        alpha = float('-inf')
+        beta = float('inf')
+
+        for action in legal_actions:  # Go through all legal actions and apply minimax
+            success_state = game_state.generate_successor(0, action)
+            v = self.alpha_beta_minimax(success_state, 0, 1, alpha, beta)
+            if action_taken is None or v > alpha:  # Check if action is better
+                action_taken = (action, v)
+                alpha = v
+        return action_taken[0]
+
+    def alpha_beta_minimax(self, state, depth, agent_index, alpha, beta):
+        num_ghosts = state.get_num_agents()
+
+        if depth == self.depth or state.is_win() or state.is_lose():
+            return self.evaluation_function(state)
+
+        # Is PacMan
+        if agent_index == 0:
+            v = float('-inf')  # Init V
+
+            for action in state.get_legal_actions(agent_index):
+                success_state = state.generate_successor(agent_index, action)
+                v = max(v, self.alpha_beta_minimax(success_state, depth, 1, alpha, beta))
+                if v > beta:
+                    break
+                alpha = max(alpha, v)
+            return v
+        else:  # Is Ghost
+            v = float('inf')  # Init V
+
+            for action in state.get_legal_actions(agent_index):
+                next_agent = (agent_index + 1) % num_ghosts  # Next agent
+                next_depth = depth + 1 if next_agent == 0 else depth  # Next depth
+
+                v = min(v, self.alpha_beta_minimax(state.generate_successor(agent_index, action), next_depth, next_agent, alpha, beta))
+
+                if v < alpha:
+                    break
+                beta = min(beta, v)
+            return v
 
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
