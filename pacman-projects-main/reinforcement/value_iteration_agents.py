@@ -66,12 +66,12 @@ class ValueIterationAgent(ValueEstimationAgent):
           value iteration, V_k+1(...) depends on V_k(...)'s.
         """ 
         for i in range(0,self.iterations):
-            old_values = self.values.copy()
+            old_values = self.values.copy() #retain copy of old values for batch update
             for state in self.mdp.get_states():
                 if self.mdp.is_terminal(state):
-                    self.values[state] = 0
+                    self.values[state] = 0 # terminal state has by definition value of 0
                 elif len(self.mdp.get_possible_actions(state)) == 0:
-                    self.values[state] = self.values[state]
+                    self.values[state] = self.values[state] # retain old value
                 else:
                     max_val = float('-inf')
                     for action in self.mdp.get_possible_actions(state):
