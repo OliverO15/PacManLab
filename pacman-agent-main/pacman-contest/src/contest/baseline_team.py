@@ -1,4 +1,18 @@
-# my_team.py
+# baseline_team.py
+# ---------------
+# Licensing Information:  You are free to use or extend these projects for
+# educational purposes provided that (1) you do not distribute or publish
+# solutions, (2) you retain this notice, and (3) you provide clear
+# attribution to UC Berkeley, including a link to http://ai.berkeley.edu.
+# 
+# Attribution Information: The Pacman AI projects were developed at UC Berkeley.
+# The core projects and autograders were primarily created by John DeNero
+# (denero@cs.berkeley.edu) and Dan Klein (klein@cs.berkeley.edu).
+# Student side autograding was added by Brad Miller, Nick Hay, and
+# Pieter Abbeel (pabbeel@cs.berkeley.edu).
+
+
+# baseline_team.py
 # ---------------
 # Licensing Information: Please do not distribute or publish solutions to this
 # project. You are free to use and extend these projects for educational
@@ -29,7 +43,7 @@ def create_team(first_index, second_index, is_red,
     As a potentially helpful development aid, this function can take
     additional string-valued keyword arguments ("first" and "second" are
     such arguments in the case of this function), which will come from
-    the --red_opts and --blue_opts command-line arguments to capture.py.
+    the --redOpts and --blueOpts command-line arguments to capture.py.
     For the nightly contest, however, your team will be created without
     any extra arguments, so you should make sure that the default
     behavior is what you want for the nightly contest.
@@ -127,52 +141,12 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
   we give you to get an idea of what an offensive agent might look like,
   but it is by no means the best or only way to build an offensive agent.
   """
-    def __init__(self, index, time_for_computing=.1):
-        super().__init__(index, time_for_computing)
-        self.food_eaten = 0
-
-    def register_initial_state(self, game_state):
-        super().register_initial_state(game_state)
-        self.food_eaten = 0
-
-    def choose_action(self, game_state):
-        actions = game_state.get_legal_actions(self.index)
-        values = [self.evaluate(game_state, a) for a in actions]
-        max_value = max(values)
-        best_actions = [a for a, v in zip(actions, values) if v == max_value]
-
-        chosen_action = random.choice(best_actions)
-        successor = self.get_successor(game_state, chosen_action)
-        my_pos = successor.get_agent_state(self.index).get_position()
-
-        # Check if the agent has eaten food
-        if my_pos in self.get_food(game_state).as_list():
-            self.food_eaten += 1
-
-        if not successor.get_agent_state(self.index).is_pacman:
-            self.food_eaten = 0
-
-        # Return back to our base if more than 4 food items have been eaten
-        if self.food_eaten > 4:
-            best_dist = 9999
-            best_action = None
-            for action in actions:
-                successor = self.get_successor(game_state, action)
-                pos2 = successor.get_agent_position(self.index)
-                dist = self.get_maze_distance(self.start, pos2)
-                if dist < best_dist:
-                    best_action = action
-                    best_dist = dist
-            return best_action
-
-        # Otherwise search for more food
-        return chosen_action
 
     def get_features(self, game_state, action):
         features = util.Counter()
         successor = self.get_successor(game_state, action)
         food_list = self.get_food(successor).as_list()
-        features['successor_score'] = -len(food_list)  # self.getScore(successor)
+        features['successor_score'] = -len(food_list)  # self.get_score(successor)
 
         # Compute distance to the nearest food
 
@@ -180,7 +154,6 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
             my_pos = successor.get_agent_state(self.index).get_position()
             min_distance = min([self.get_maze_distance(my_pos, food) for food in food_list])
             features['distance_to_food'] = min_distance
-
         return features
 
     def get_weights(self, game_state, action):
@@ -198,7 +171,6 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
     def get_features(self, game_state, action):
         features = util.Counter()
         successor = self.get_successor(game_state, action)
-        print(self.index)
 
         my_state = successor.get_agent_state(self.index)
         my_pos = my_state.get_position()
